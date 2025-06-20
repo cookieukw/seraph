@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Desenho do R2D2 Outline</title>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f0f0; }
+        canvas { border: 1px solid #ccc; background-color: white; }
+    </style>
+</head>
+<body>
+    <canvas id="r2d2Canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('r2d2Canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Define as cores
+        const preto = 'black';
+        const vermelho = 'red'; // Para os preenchimentos, se quiser mudar
+
+        // Fator de escala para aumentar o tamanho do desenho
+        const scale = 20; // Ajuste este valor para mudar o tamanho total
+
+        // Dimensões da figura (baseadas na imagem)
+        const figWidthUnits = 11; // Largura total em unidades
+        const figHeightUnits = 18; // Altura total em unidades
+
+        canvas.width = figWidthUnits * scale;
+        canvas.height = figHeightUnits * scale;
+
+        ctx.strokeStyle = preto;
+        ctx.lineWidth = 2; // Espessura da linha do contorno
+
+        // Função auxiliar para desenhar um retângulo
+        // x, y, width, height são em "unidades" da grade, que serão escaladas
+        function drawRect(x, y, width, height, fill = false) {
+            const scaledX = x * scale;
+            const scaledY = y * scale;
+            const scaledWidth = width * scale;
+            const scaledHeight = height * scale;
+
+            if (fill) {
+                ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+            }
+            ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+        }
+
+        // --- Desenha a figura do R2D2 Outline ---
+
+        // Corpo principal
+        // Base
+        drawRect(4, 16, 3, 2); // Pés
+        drawRect(3, 14, 2, 2); // Pernas
+        drawRect(6, 14, 2, 2);
+        drawRect(2, 10, 7, 4); // Corpo inferior
+        drawRect(3, 8, 5, 2); // Cintura
+        drawRect(2, 6, 7, 2); // Meio do corpo
+        drawRect(1, 4, 9, 2); // Parte superior do corpo
+        drawRect(1, 3, 9, 1); // Topo do corpo
+
+        // Cabeça
+        drawRect(2, 2, 7, 1);
+        drawRect(3, 1, 5, 1);
+        drawRect(4, 0, 3, 1);
+
+        // Braços/Laterais
+        drawRect(0, 5, 2, 5); // Braço esquerdo
+        drawRect(9, 5, 2, 5); // Braço direito
+
+        // Detalhe do centro (quadrados aninhados)
+        drawRect(4, 11, 3, 3); // Quadrado maior
+        drawRect(5, 12, 1, 1); // Quadrado menor (central)
+    </script>
+</body>
+</html>

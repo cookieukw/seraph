@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Desenho Geométrico</title>
+ <style>
+ body { margin: 0; }
+ canvas { display: block; }
+ </style>
+</head>
+<body>
+ <canvas id="meuCanvas"></canvas>
+
+
+ <script>
+ const canvas = document.getElementById('meuCanvas');
+ const ctx = canvas.getContext('2d');
+
+
+ // Define as cores
+ const preto = 'black';
+
+
+ // Ajusta o tamanho do canvas
+ const scale = 20; // Fator de escala para aumentar o tamanho
+ canvas.width = 11 * scale;
+ canvas.height = 18 * scale;
+
+
+ ctx.fillStyle = preto;
+ ctx.lineWidth = 2;
+
+
+ // Função para desenhar um retângulo
+ function drawRect(x, y, width, height) {
+ ctx.fillRect(x * scale, y * scale, width * scale, height * scale);
+ ctx.strokeRect(x * scale, y * scale, width * scale, height * scale);
+ }
+
+
+ // Desenha a figura usando retângulos
+ drawRect(4, 0, 3, 1);
+ drawRect(3, 1, 5, 1);
+ drawRect(2, 2, 7, 1);
+ drawRect(1, 3, 9, 1);
+ drawRect(1, 4, 9, 2);
+ drawRect(2, 6, 7, 2);
+ drawRect(3, 8, 5, 2);
+ drawRect(2, 10, 7, 3);
+ drawRect(4, 13, 3, 1);
+ drawRect(3, 14, 2, 3);
+ drawRect(6, 14, 2, 3);
+ drawRect(1, 17, 2, 1);
+ drawRect(8, 17, 2, 1);
+ </script>
+</body>
+</html>
