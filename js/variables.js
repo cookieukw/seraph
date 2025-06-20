@@ -379,18 +379,53 @@ const upgradePool = [
       },
     ],
   },
-  {
-    id: "bloodthirst",
-    maxLevel: 1,
-    initialValues: {},
-    levels: [
-      {
-        title: "Sede de Sangue",
-        description: "Cura 1 de HP a cada 10 inimigos derrotados.",
-        apply: (p) => {},
-      },
-    ],
-  },
+ {
+   id: "bloodthirst",
+   maxLevel: 5, // MODIFICAÇÃO: Aumenta o número máximo de níveis
+   initialValues: { healAmount: 0, killsPerHeal: 0, currentKills: 0 }, // MODIFICAÇÃO: Adiciona valores iniciais para cura, kills por cura e contador de kills
+   levels: [
+     {
+       title: "Sede de Sangue I",
+       description: "Cura 5 de HP a cada 10 inimigos derrotados.",
+       apply: (p) => {
+         p.upgrades.bloodthirst.healAmount = 5; 
+         p.upgrades.bloodthirst.killsPerHeal = 10; 
+       },
+     },
+     {
+       title: "Sede de Sangue II",
+       description: "Cura 7 de HP a cada 10 inimigos derrotados.",
+       apply: (p) => {
+         p.upgrades.bloodthirst.healAmount = 7;
+         p.upgrades.bloodthirst.killsPerHeal = 10;
+       },
+     },
+     {
+       title: "Sede de Sangue III",
+       description: "Cura 10 de HP a cada 10 inimigos derrotados.",
+       apply: (p) => {
+         p.upgrades.bloodthirst.healAmount = 10;
+         p.upgrades.bloodthirst.killsPerHeal = 10;
+       },
+     },
+     {
+       title: "Sede de Sangue IV",
+       description: "Cura 10 de HP a cada 8 inimigos derrotados.", 
+       apply: (p) => {
+         p.upgrades.bloodthirst.healAmount = 10;
+         p.upgrades.bloodthirst.killsPerHeal = 8;
+       },
+     },
+     {
+       title: "Sede de Sangue V",
+       description: "Cura 15 de HP a cada 5 inimigos derrotados.",
+       apply: (p) => {
+         p.upgrades.bloodthirst.healAmount = 15;
+         p.upgrades.bloodthirst.killsPerHeal = 5;
+       },
+     },
+   ],
+ },
   {
     id: "temp_armor",
     maxLevel: 1,
@@ -398,10 +433,10 @@ const upgradePool = [
     levels: [
       {
         title: "Bencao do Sabio",
-        description: "Ganha +20 de armadura por 10s ao subir de nivel.",
+        description: "Ganha +15 de armadura por 25s ao subir de nivel.",
         apply: (p) => {
-          p.upgrades.temp_armor.value = 20;
-          p.upgrades.temp_armor.timer = 10000;
+          p.upgrades.temp_armor.value = 15;
+          p.upgrades.temp_armor.timer = 25000;
         },
       },
     ],
@@ -421,7 +456,7 @@ const upgradePool = [
   {
     id: "thorns",
     maxLevel: 1,
-    initialValues: { damage: 2, radius: 60 },
+    initialValues: { damage: 5, radius: 60 },
     levels: [
       {
         title: "Aura de Espinhos",
@@ -433,7 +468,7 @@ const upgradePool = [
   {
     id: "frenzy",
     maxLevel: 1,
-    initialValues: { speedPerStack: 0.2 },
+    initialValues: { speedPerStack: 1 },
     levels: [
       {
         title: "Frenesi",
@@ -446,7 +481,7 @@ const upgradePool = [
   {
     id: "infection",
     maxLevel: 1,
-    initialValues: { chance: 0.2, damage: 2, radius: 50 },
+    initialValues: { chance: 0.2, damage: 6, radius: 50 },
     levels: [
       {
         title: "Peste Virulenta",
@@ -510,7 +545,7 @@ const upgradePool = [
   {
     id: "laserOrb",
     maxLevel: 3,
-    initialValues: { count: 0, damage: 2, pierce: 0, chain: 0 },
+    initialValues: { count: 0, damage: 5, pierce: 0, chain: 0 },
     levels: [
       {
         title: "Orbe de Raio",
