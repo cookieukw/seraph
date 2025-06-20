@@ -6,6 +6,7 @@ class UI {
     this.levelUpText = "";
     this.levelUpTextOpacity = 0;
   }
+
   draw(context) {
     context.save();
     context.fillStyle = "white";
@@ -55,7 +56,7 @@ class UI {
     let statusLine = 0;
     if (this.game.player.isParasitized()) {
       context.fillStyle = "#2ECC40";
-      context.fillText("PARASITADO!", 20, statusYStart + statusLine * 30);
+      context.fillText("PARASITADO!", 210, 150);
       statusLine++;
     }
     if (this.game.player.speedBoosts.length > 0) {
@@ -78,24 +79,33 @@ class UI {
       this.levelUpTextOpacity -= 0.02;
       context.restore();
     }
+  
     if (this.game.damageVignetteOpacity > 0) {
-      const gradient = context.createRadialGradient(
-        this.game.width / 2,
-        this.game.height / 2,
-        this.game.width / 3,
-        this.game.width / 2,
-        this.game.height / 2,
-        this.game.width / 2
-      );
-      gradient.addColorStop(0, `rgba(255, 0, 0, 0)`);
-      gradient.addColorStop(
-        1,
-        `rgba(255, 0, 0, ${this.game.damageVignetteOpacity})`
-      );
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, this.game.width, this.game.height);
-      this.game.damageVignetteOpacity -= 0.02;
+      // Garante que o gradiente foi criado.
+      // Chamar createCachedDamageGradient() aqui é uma boa fallback
+      // caso não seja chamado em triggerDamageVignette, mas o ideal é que triggerDamageVignette o chame primeiro.
+      if (!this.cachedDamageGradient) {
+        this.createCachedDamageGradient();
+      }
+
+      context.save(); // Salva o contexto para aplicar globalAlpha temporariamente
+      context.globalAlpha = this.game.damageVignetteOpacity; // Controla a opacidade geral do gradiente
+      context.fillStyle = this.cachedDamageGradient; // Usa o gradiente pré-criado
+      context.fillRect(0, 0, this.game.width, this.game.height); // Desenha
+      context.restore(); // Restaura globalAlpha para 1.0
+
+      this.game.damageVignetteOpacity -= 0.02; // Continua o decaimento da opacidade
     }
+    
+
+    const elapsed = Math.floor(this.game.gameTime / 1000);
+    const minutes = String(Math.floor(elapsed / 60)).padStart(2, "0");
+    const seconds = String(elapsed % 60).padStart(2, "0");
+    context.fillStyle = "white";
+    context.font = `${this.fontSize}px ${this.fontFamily}`;
+    context.textAlign = "right";
+    context.fillText(`TEMPO: ${minutes}:${seconds}`, 210, 190);
+
     context.restore();
   }
   showLevelUpFeedback(x, y) {
@@ -103,5 +113,35 @@ class UI {
     this.levelUpX = x;
     this.levelUpY = y - 40;
     this.levelUpTextOpacity = 1.0;
+  }
+
+  // NOVO MÉTODO: Cria e armazena o gradiente de dano UMA VEZ
+  createCachedDamageGradient() {
+    // Recria apenas se não existe (primeira vez) ou se o tamanho do canvas mudou
+    // (boa prática se o canvas for redimensionável)
+    if (
+      !this.cachedDamageGradient ||
+      this.game.width !== (this.cachedDamageGradient._width || 0) || // Checa se a largura do canvas mudou
+      this.game.height !== (this.cachedDamageGradient._height || 0)
+    ) {
+      // Checa se a altura do canvas mudou
+
+      const gradient = this.game.ctx.createRadialGradient(
+        this.game.width / 2,
+        this.game.height / 2,
+        this.game.width / 3, // Raio interno
+        this.game.width / 2,
+        this.game.height / 2,
+        this.game.width / 2 // Raio externo
+      );
+      // O gradiente é criado com o vermelho opaco no final. A transparência será controlada por globalAlpha.
+      gradient.addColorStop(0, `rgba(255, 0, 0, 0)`); // Centro transparente
+      gradient.addColorStop(1, `rgba(255, 0, 0, 1)`); // Borda vermelha opaca (alpha total)
+
+      this.cachedDamageGradient = gradient;
+      // Armazena as dimensões do canvas associadas a este gradiente para checagens futuras
+      this.cachedDamageGradient._width = this.game.width;
+      this.cachedDamageGradient._height = this.game.height;
+    }
   }
 }

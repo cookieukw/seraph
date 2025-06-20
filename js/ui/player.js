@@ -29,6 +29,12 @@ class Player {
     this.isMoving = false;
     this.killCount = 0;
     this.upgrades = {};
+
+    this.parasiteParticleTimer = 0;
+    this.parasiteParticleInterval = 100; // Gera partículas a cada 100ms
+    this.parasiteParticleColor = "#8b0000"; // Vermelho escuro/marrom para sangue
+    this.parasiteParticleCount = 1; // Quantidade de partículas por emissão (mantenha baixo para não sobrecarregar)
+
     upgradePool.forEach((up) => {
       this.upgrades[up.id] = { level: 0, ...up.initialValues };
     });
@@ -103,7 +109,20 @@ class Player {
         this.takeDamage(parasiteDamage, true);
         this.parasiteDamageTimer = 0;
       }
+      this.parasiteParticleTimer += deltaTime;
+        if (this.parasiteParticleTimer >= this.parasiteParticleInterval) {
+          // Usa this.game.createParticles para criar partículas de sangue
+          this.game.createParticles(
+            this.x, // Posição X do jogador
+            this.y + this.height * 0.25, // Um pouco abaixo do centro do jogador, para simular escorrimento
+            this.parasiteParticleColor, // Cor de sangue
+            this.parasiteParticleCount // Quantidade de partículas
+          );
+          this.parasiteParticleTimer = 0; // Reseta o timer
+        }
     }
+
+
     if (this.upgrades.lightningStrike.level > 0) {
       this.upgrades.lightningStrike.timer += deltaTime;
       if (
@@ -234,8 +253,17 @@ class Player {
   }
   onKill() {
     this.killCount++;
-    if (this.upgrades.bloodthirst.level > 0 && this.killCount % 10 === 0)
-      this.heal(1);
+    if (this.upgrades.bloodthirst.level > 0) {
+      // Verifica se o upgrade foi pego (nível > 0)
+      this.upgrades.bloodthirst.currentKills++; // Incrementa o contador de kills do upgrade
+      if (
+        this.upgrades.bloodthirst.currentKills >=
+        this.upgrades.bloodthirst.killsPerHeal
+      ) {
+        this.heal(this.upgrades.bloodthirst.healAmount); // Cura pela quantidade definida no upgrade
+        this.upgrades.bloodthirst.currentKills = 0; // Reseta o contador de kills do upgrade
+      }
+    }
     if (this.upgrades.frenzy.level > 0) this.speedBoosts.push({ timer: 3000 });
   }
   updateSpeedBoosts(deltaTime) {

@@ -5,8 +5,6 @@ class Game {
     this.ctx = ctx;
     this.setup();
   }
- 
-
 
   setup() {
     this.terrain = new Terrain(this);
@@ -29,8 +27,15 @@ class Game {
     this.particlesEnabled = true;
     this.screenShakeEnabled = true;
     this.damageVignetteOpacity = 0;
-    this.shakeTimer = 0;
-    this.shakeMagnitude = 0;
+
+    this.shakeTimer = 0; // Temporizador de duração do tremor
+    this.shakeDuration = 0; // Duração total do tremor (definida em triggerShake)
+    this.shakeMagnitude = 0; // Magnitude inicial do tremor
+    this.shakeFrequencyX = 0.02; // Frequência da oscilação no eixo X
+    this.shakeFrequencyY = 0.03; // Frequência da oscilação no eixo Y
+    this.shakeOffsetX = 0; // Offset X atual do tremor
+    this.shakeOffsetY = 0; // Offset Y atual do tremor
+
     this.score = 0;
     this.gameTime = 0;
     this.scoreTimer = 0;
@@ -92,8 +97,25 @@ class Game {
     }
   }
   update(deltaTime) {
-    if (this.shakeTimer > 0) this.shakeTimer -= deltaTime;
+    deltaTime = Math.min(deltaTime, 100); // Não permite que deltaTime seja maior que 100ms
 
+    if (this.shakeTimer > 0) {
+      this.shakeTimer -= deltaTime;
+
+      const progress = Math.max(0, this.shakeTimer / this.shakeDuration); // Progresso do decaimento (de 1 a 0)
+      const currentMagnitude = this.easeOutQuad(progress) * this.shakeMagnitude; // Aplica easing para a magnitude
+
+      this.shakeOffsetX =
+        Math.sin(this.gameTime * this.shakeFrequencyX) * currentMagnitude;
+      this.shakeOffsetY =
+        Math.cos(this.gameTime * this.shakeFrequencyY) * currentMagnitude;
+
+      if (this.shakeTimer <= 0) {
+        this.shakeTimer = 0;
+        this.shakeOffsetX = 0;
+        this.shakeOffsetY = 0;
+      }
+    }
     this.gameTime += deltaTime;
     this.player.update(this.input, this.mouse, deltaTime);
     this.camera.update();
@@ -132,38 +154,64 @@ class Game {
   }
   draw(context) {
     context.clearRect(0, 0, this.width, this.height);
-
-    context.save();
-    if (this.shakeTimer > 0) {
-      context.translate(
-        Math.random() * this.shakeMagnitude * 2 - this.shakeMagnitude,
-        Math.random() * this.shakeMagnitude * 2 - this.shakeMagnitude
-      );
-    }
-
     this.background.draw(context);
 
-    context.save();
-    context.translate(-this.camera.x, -this.camera.y);
+    context.save(); // Salva o estado para a translação da câmera E do tremor
+
+    context.translate(-this.camera.x, -this.camera.y); // Translação da câmera
+    if (this.shakeTimer > 0) {
+      context.translate(this.shakeOffsetX, this.shakeOffsetY);
+    }
+
     this.terrain.draw(context);
-    // BUG FIX: Desenhar todos os objetos do jogo dentro do mesmo `save/restore` da câmera
+   
     [
-      ...this.particles,
-      ...this.aoeEffects,
-      ...this.projectiles,
-      ...this.enemies,
-      ...this.enemyProjectiles,
-      this.player,
+      ...this.particles.filter((p) => this.isInCameraView(p)),
+      ...this.aoeEffects.filter((aoe) => this.isInCameraView(aoe)),
+      ...this.projectiles.filter((p) => this.isInCameraView(p)),
+      ...this.enemies.filter((e) => this.isInCameraView(e)),
+      ...this.enemyProjectiles.filter((ep) => this.isInCameraView(ep)),
+      this.player, // O player é sempre desenhado
     ].forEach((obj) => obj.draw(context));
-    context.restore();
 
-    this.ui.draw(context);
+    context.restore(); // Restaura o estado após translação da câmera e do tremor
 
-    context.restore();
+    this.ui.draw(context); // A UI geralmente fica fixa e não treme
+
+    // REMOVIDO: ESTE ESTAVA DUPLICADO E INCORRETO. REMOVA ESTA LINHA DO SEU CÓDIGO:
+    // context.restore();
 
     if (this.gameState === "gameOver") {
       this.drawGameOver(context);
     }
+  }
+
+  isInCameraView(obj) {
+    // Verifica se o objeto tem as propriedades necessárias para o culling
+    if (typeof obj.x === 'undefined' || typeof obj.y === 'undefined' ||
+        typeof obj.width === 'undefined' || typeof obj.height === 'undefined') {
+        return true; // Se faltar alguma propriedade, assume que é visível para evitar erros
+    }
+
+    // Adicione uma margem extra para que objetos que estão "quase" na tela ainda sejam desenhados,
+    // evitando que apareçam e desapareçam abruptamente nas bordas.
+    const margin = 50; // Margem em pixels (ajuste conforme necessário)
+
+    const cameraLeft = this.camera.x - margin;
+    const cameraRight = this.camera.x + this.width + margin;
+    const cameraTop = this.camera.y - margin;
+    const cameraBottom = this.camera.y + this.height + margin;
+
+    const objLeft = obj.x;
+    const objRight = obj.x + obj.width;
+    const objTop = obj.y;
+    const objBottom = obj.y + obj.height;
+
+    // Retorna true se houver qualquer sobreposição entre o objeto e a área de visão da câmera (com margem)
+    return objRight > cameraLeft &&
+           objLeft < cameraRight &&
+           objBottom > cameraTop &&
+           objTop < cameraBottom;
   }
   drawGameOver(context) {
     context.save();
@@ -411,16 +459,31 @@ class Game {
     );
   }
   triggerDamageVignette() {
-    this.damageVignetteOpacity = 0.4;
+   
+    this.damageVignetteOpacity = 0.4; // Define a opacidade inicial
+    this.ui.createCachedDamageGradient(); // NOVO: Chama UI para pré-gerar o gradiente
   }
-  triggerShake(duration, magnitude) {
+
+  // Método para ativar o tremor de tela
+  // duration: duração total do tremor em milissegundos
+  // magnitude: intensidade máxima do tremor em pixels
+  // frequencyX, frequencyY: (opcional) frequência de oscilação para os eixos X e Y
+  triggerShake(duration, magnitude, frequencyX = 0.02, frequencyY = 0.03) {
     if (!this.screenShakeEnabled) return;
-    this.shakeTimer = duration;
-    this.shakeMagnitude = magnitude;
+    this.shakeDuration = duration;
+    this.shakeTimer = duration; // Inicia o temporizador com a duração total
+    this.shakeMagnitude = magnitude; // Define a magnitude máxima
+    this.shakeFrequencyX = frequencyX;
+    this.shakeFrequencyY = frequencyY;
+    this.shakeOffsetX = 0;
+    this.shakeOffsetY = 0;
   }
   setGameOver() {
     this.gameState = "gameOver";
     this.gameControls.style.display = "none";
+  } // NOVO MÉTODO: Função de easing para o decaimento do tremor (Quadratic Ease Out)
+  easeOutQuad(t) {
+    return t * (2 - t);
   }
   restart() {
     this.setup();
