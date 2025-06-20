@@ -58,7 +58,9 @@ canvas {
   border-left: 4px solid white;
   border-right: 4px solid white;
 }
-
+#auto-aim-btn {
+  font-size: .4rem;
+}
 .menu-overlay {
   position: absolute;
   top: 0;
@@ -75,58 +77,6 @@ canvas {
 }
 .menu-overlay.active {
   display: flex;
-}
-.menu-box {
-  background-color: #03045e;
-  border: 2px solid white;
-  padding: 30px;
-  color: white;
-  text-align: center;
-  min-width: 350px;
-}
-.menu-box h2 {
-  margin-top: 0;
-  font-size: 24px;
-  color: #caf0f8;
-}
-.menu-btn {
-  background-color: #0077b6;
-  color: white;
-  border: 2px solid #90e0ef;
-  padding: 10px 20px;
-  font-family: "Press Start 2P", cursive;
-  font-size: 14px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-#level-up-screen .upgrade-choices {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.upgrade-card {
-  background-color: #1a1a1a;
-  border: 2px solid #90e0ef;
-  width: 180px;
-  padding: 20px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.upgrade-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px #caf0f8;
-}
-.upgrade-card h3 {
-  font-size: 14px;
-  margin-top: 0;
-  color: #caf0f8;
-}
-.upgrade-card p {
-  font-size: 10px;
-  line-height: 1.4;
 }
 
 .settings-option {
@@ -159,9 +109,12 @@ canvas {
   box-sizing: border-box;
   z-index: 20;
 }
+
 #debug-menu.active {
   display: flex;
+  z-index: 100;
 }
+
 #debug-menu h2 {
   font-size: 16px;
   text-align: center;
@@ -170,10 +123,12 @@ canvas {
   border-bottom: 1px solid white;
   padding-bottom: 10px;
 }
+
 #debug-upgrades-container {
   overflow-y: auto;
   flex-grow: 1;
 }
+
 .debug-btn {
   background: #0077b6;
   border: 1px solid #90e0ef;
@@ -194,7 +149,7 @@ canvas {
   position: fixed;
   left: 10px;
   bottom: 10px;
-  z-index: 1000;
+  z-index: 50;
 }
 
 .pixel-link {
