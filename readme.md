@@ -74,3 +74,67 @@ Ao subir de nível, escolha uma de três melhorias aleatórias.
 - **Geração Procedural**: Terreno e fundo gerados aleatoriamente a cada partida (mundo maior que a tela)  
 - **Câmera e Parallax**: Câmera segue jogador com efeito de profundidade no fundo  
 - **Efeito de Tremor**: Tela treme ao sofrer dano (pode ser desativado no menu)  
+
+# ⚙️ Registro de Atualização - 20 de Junho de 2025 ⚙️
+
+Olá, Sobrevivente!  
+A equipe de desenvolvimento tem trabalhado duro e está animada para apresentar uma atualização **robusta**, focada em **aprimoramentos visuais**, **correção de bugs** e um **balanço de habilidades** para tornar sua experiência de jogo ainda mais **imersiva e desafiadora**!
+
+---
+
+## ✨ Novidades e Melhorias Visuais ✨
+
+### Inimigos Reimaginados
+- **Atirador**: O antigo quadrado vermelho virou uma quimera grotesca inspirada no *Terraria*.
+- **Girador**: O triângulo roxo agora é uma estrela vibrante, caótica e giratória.
+- **Parasita**: O círculo verde evoluiu para uma larva nojenta e viscosa.
+
+### Partículas de Dano Aprimoradas
+- "Sangue" agora é pixelado e quadrado, dando sensação de esmagamento nojento e satisfatório.
+
+### Interface do Usuário (UI) Polida
+- Menus de upgrades e pausa redesenhados: mais bonitos e intuitivos.
+- Botões de pausa e auto-mira corrigidos e melhorados.
+
+### Projéteis Vibrantes
+- Tiros com brilhos, trilhas e animações: o combate agora *vive*.
+
+### Temporizador em Jogo
+- Novo contador mostra até onde você consegue sobreviver à horda.
+
+### Orbes com Vida Própria
+- **Orbe de Disparo** e **Orbe de Raio** agora têm efeitos de:
+  - Carregamento
+  - Pulso
+  - Disparo
+
+---
+
+## 🐞 Correções de Bugs 🐞
+
+- **Vignette Otimizado**: efeito vermelho ao tomar dano não impacta mais o desempenho.
+- **Animações Suaves**: bugs de movimentação corrigidos; fluidez total.
+- **Raio Laser**: agora sempre visível com seus novos visuais.
+
+---
+
+## 📈 Balanço de Habilidades: Buffs & Nerfs 📉
+
+- **Orbe do Raio (Dano Base)**: `2 → 5`
+- **Frenesi (Velocidade Acumulada)**: `0.2 → 1`
+- **Aura de Espinhos (Dano Base)**: `2 → 5`
+
+### Benção do Sábio
+- **Duração da Armadura**: `10s → 25s`
+- **Ganho de Armadura**: `+10 → +15`
+
+### Sede de Sangue (Rework Total)
+- **Cura por Ativação**: `5 HP (Nível I) → 15 HP (Nível V)`
+- **Inimigos para Curar**: `10 (Níveis I-III) → 5 (Nível V)`
+
+### Peste Virulenta
+- **Dano Base**: `2 → 6`
+
+---
+
+Agradecemos o apoio contínuo e esperamos que curtam as novidades!
