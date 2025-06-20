@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seraph Dark</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="instructions-ui" class="ui-element"><p>A/D = Mover</p><p>W/Espaco = Pular</p><p>Clique = Atirar</p><p>P = Pausar</p><p>F1 = Debug</p></div>
+    <div id="game-controls" class="ui-element">
+        <button id="auto-aim-btn" class="control-btn">AUTO</button>
+        <button id="pause-btn" class="control-btn"><div class="icon"></div></button>
+    </div>
+    <!-- Menu de Depuração -->
+    <div id="debug-menu">
+        <h2>Menu de Depuração (F1)</h2>
+        <div id="debug-upgrades-container"></div>
+    </div>
+    <div id="pause-menu" class="menu-overlay">
+        <div class="menu-box">
+            <h2>PAUSADO</h2>
+            <div class="settings-option">
+                <label for="particle-toggle">Otimizar Particulas</label>
+                <input type="checkbox" id="particle-toggle" checked>
+            </div>
+             <div class="settings-option">
+                <label for="shake-toggle">Efeito de Tremor</label>
+                <input type="checkbox" id="shake-toggle" checked>
+            </div>
+            <button id="resume-btn" class="menu-btn">Continuar</button>
+            <button id="exit-menu-btn" class="menu-btn">Sair para o Menu</button>
+        </div>
+    </div>
+    <div id="level-up-screen" class="menu-overlay">
+        <div class="menu-box">
+            <h2>NIVEL AVANCADO!</h2>
+            <p>Escolha uma melhoria:</p>
+            <div id="upgrade-choices-container" class="upgrade-choices"></div>
+        </div>
+    </div>
+    
+    <script src="./js/variables.js"></script>
+    <script src="./js/enemy/enemy.js"></script>
+    <script src="./js/projectile/orb.js"></script>
+    <script src="./js/game_design/ao_effect.js"></script>
+    <script src="./js//ui/ui.js"></script>
+    <script src="./js/game_design/terrain.js"></script>
+    <script src="./js/enemy/spiral_enemy.js"></script>
+    <script src="./js/projectile/shooting_orb.js"></script>
+    <script src="./js/enemy/shooter_enemy.js"></script>
+    <script src="./js/projectile/projectile.js"></script>
+    <script src="./js/ui/player.js"></script>
+    <script src="./js/game_design/particle.js"></script>
+    <script src="./js/enemy/parasite_enemy.js"></script>
+    <script src="./js/projectile/lightning_bolt.js"></script>
+    <script src="./js/ightning_bolt.js"></script>
+    <script src="./js/projectile/laser_orb.js"></script>
+    <script src="./js/projectile/laser_beam.js"></script>
+    <script src="./js/game_design/input_handler.js"></script>
+    <script src="./js/game_design/game.js"></script>
+    <script src="./js/game_design/camera.js"></script>
+    <script src="./js/game_design/background.js"></script>
+    <script src="./js/script.js"></script>
+</body>
+</html>
