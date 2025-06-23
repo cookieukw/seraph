@@ -1,0 +1,50 @@
+/* css/joystick-styles.css */
+
+    body {
+        /* Garante que o corpo e o HTML ocupem toda a viewport para joysticks */
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden; /* Evita scroll */
+    }
+
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw !important; /* Força o canvas a preencher a largura */
+        height: 100vh !important; /* Força o canvas a preencher a altura */
+        border-radius: 0 !important; /* Remove border-radius para preenchimento total */
+        box-shadow: none !important; /* Remove sombra */
+    }
+
+    /* Posicionamento dos botões mobile */
+    #game-controls-mobile {
+        position: absolute;
+        bottom: 1rem; /* Margem do fundo */
+        left: 50%;
+        transform: translateX(-50%); /* Centraliza */
+        display: flex;
+        gap: 1rem;
+        z-index: 100; /* Garante que fiquem por cima do canvas */
+    }
+
+    .mobile-btn {
+        background-color: rgba(60, 60, 60, 0.7); /* Fundo semi-transparente */
+        color: white;
+        border: 2px solid #888;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .mobile-btn:active, .mobile-btn.active {
+        background-color: rgba(100, 100, 100, 0.9);
+        border-color: #eee;
+    }
+
+    /* Oculta os controles de desktop em mobile */
+    #zinstructions-ui, #zgame-controls {
+        display: none !important;
+    }
