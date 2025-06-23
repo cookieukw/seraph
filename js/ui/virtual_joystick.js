@@ -1,4 +1,4 @@
-// js/ui/VirtualJoystick.js
+
 class VirtualJoystick {
   constructor(config) {
     const defaults = {

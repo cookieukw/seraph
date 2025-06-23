@@ -5,7 +5,7 @@ class InputHandler {
     this.joysticksEnabled = false;
 
     //  Flag para forçar joysticks no desktop (para testes)
-    this.forceMobileControlsForTesting = true; // Mude para TRUE para testar joysticks no desktop
+    this.forceMobileControlsForTesting = false; // Mude para TRUE para testar joysticks no desktop
 
     this.moveJoystickDirection = { x: 0, y: 0 };
     this.aimJoystickDirection = { x: 0, y: 0 };
