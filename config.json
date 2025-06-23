@@ -1,0 +1,16 @@
+{
+  "name": "Seraph Dark",
+   "version": "1.0.0",
+  "build": 100,
+  "id": "com.cookie.seraph",
+  "fullscreen": false,
+  "orientation": "portrait",
+  "credentials": {
+    "android": {
+      "release": {
+        "name": "111111",
+        "secret": "3a18b4f40dd44bfd0e20e5125a706c27"
+      }
+    }
+  }
+}
