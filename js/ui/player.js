@@ -42,9 +42,34 @@ class Player {
     this.orbs = [];
   }
   update(input, mouse, deltaTime) {
-    this.isMoving = input.keys.includes("a") || input.keys.includes("d");
+    
+    if (input.joysticksEnabled) {
+      // Lógica para Joystick
+      this.x += input.moveJoystickDirection.x * this.speed;
+      this.isMoving = input.moveJoystickDirection.x !== 0;
+
+      // Pulo com o joystick (movimento para cima)
+      if (input.moveJoystickDirection.y < -0.5 && this.isGrounded) {
+        this.velocityY = this.jumpStrength;
+        this.isGrounded = false;
+      }
+    } else {
+      // Lógica original para Teclado (fallback)
+      this.isMoving = input.keys.includes("a") || input.keys.includes("d");
+      if (input.keys.includes("a")) this.x -= this.speed;
+      if (input.keys.includes("d")) this.x += this.speed;
+
+      if (
+        (input.keys.includes("w") || input.keys.includes(" ")) &&
+        this.isGrounded
+      ) {
+        this.velocityY = this.jumpStrength;
+        this.isGrounded = false;
+      }
+    }
+    /* this.isMoving = input.keys.includes("a") || input.keys.includes("d");
     if (input.keys.includes("a")) this.x -= this.speed;
-    if (input.keys.includes("d")) this.x += this.speed;
+    if (input.keys.includes("d")) this.x += this.speed; */
 
     this.velocityY += this.gravity;
     this.y += this.velocityY;
@@ -70,7 +95,7 @@ class Player {
       this.isGrounded = false;
     }
 
-    const mouseXInWorld = mouse.x + this.game.camera.x;
+  /*   const mouseXInWorld = mouse.x + this.game.camera.x;
     const mouseYInWorld = mouse.y;
     if (this.game.autoAimActive) {
       const closestEnemy = this.game.getClosestEnemy(this);
@@ -86,7 +111,37 @@ class Player {
         mouseXInWorld - this.x
       );
     }
+ */
 
+    if (this.game.autoAimActive) {
+      // 1. Prioridade para a mira automática
+      const closestEnemy = this.game.getClosestEnemy(this);
+      if (closestEnemy) {
+        this.staffAngle = Math.atan2(
+          closestEnemy.y - this.y,
+          closestEnemy.x - this.x
+        );
+      }
+    } else if (input.joysticksEnabled) {
+      // 2. Se os joysticks estão ativos, a mira é controlada APENAS por eles
+      if (input.isAimingJoystickActive) {
+        if (input.aimJoystickDirection.x !== 0 || input.aimJoystickDirection.y !== 0) {
+          this.staffAngle = Math.atan2(
+            input.aimJoystickDirection.y,
+            input.aimJoystickDirection.x
+          );
+        }
+      }
+      // Se o joystick de mira não estiver ativo, o ângulo NÃO é atualizado (para de seguir o mouse)
+    } else {
+      // 3. Se nada acima for verdade (sem auto-aim e sem joysticks), usa o mouse
+      const mouseXInWorld = mouse.x + this.game.camera.x;
+      const mouseYInWorld = mouse.y;
+      this.staffAngle = Math.atan2(
+        mouseYInWorld - this.y,
+        mouseXInWorld - this.x
+      );
+    }
     this.upgrades.atk_speed_up.timer += deltaTime;
     if (
       (this.game.isMouseDown || this.game.autoAimActive) &&

@@ -164,7 +164,7 @@ class Game {
     }
 
     this.terrain.draw(context);
-   
+
     [
       ...this.particles.filter((p) => this.isInCameraView(p)),
       ...this.aoeEffects.filter((aoe) => this.isInCameraView(aoe)),
@@ -178,9 +178,7 @@ class Game {
 
     this.ui.draw(context); // A UI geralmente fica fixa e não treme
 
-    // REMOVIDO: ESTE ESTAVA DUPLICADO E INCORRETO. REMOVA ESTA LINHA DO SEU CÓDIGO:
-    // context.restore();
-
+    this.input.renderJoysticks(context);
     if (this.gameState === "gameOver") {
       this.drawGameOver(context);
     }
@@ -188,9 +186,13 @@ class Game {
 
   isInCameraView(obj) {
     // Verifica se o objeto tem as propriedades necessárias para o culling
-    if (typeof obj.x === 'undefined' || typeof obj.y === 'undefined' ||
-        typeof obj.width === 'undefined' || typeof obj.height === 'undefined') {
-        return true; // Se faltar alguma propriedade, assume que é visível para evitar erros
+    if (
+      typeof obj.x === "undefined" ||
+      typeof obj.y === "undefined" ||
+      typeof obj.width === "undefined" ||
+      typeof obj.height === "undefined"
+    ) {
+      return true; // Se faltar alguma propriedade, assume que é visível para evitar erros
     }
 
     // Adicione uma margem extra para que objetos que estão "quase" na tela ainda sejam desenhados,
@@ -208,10 +210,12 @@ class Game {
     const objBottom = obj.y + obj.height;
 
     // Retorna true se houver qualquer sobreposição entre o objeto e a área de visão da câmera (com margem)
-    return objRight > cameraLeft &&
-           objLeft < cameraRight &&
-           objBottom > cameraTop &&
-           objTop < cameraBottom;
+    return (
+      objRight > cameraLeft &&
+      objLeft < cameraRight &&
+      objBottom > cameraTop &&
+      objTop < cameraBottom
+    );
   }
   drawGameOver(context) {
     context.save();
@@ -459,9 +463,8 @@ class Game {
     );
   }
   triggerDamageVignette() {
-   
     this.damageVignetteOpacity = 0.4; // Define a opacidade inicial
-    this.ui.createCachedDamageGradient(); // NOVO: Chama UI para pré-gerar o gradiente
+    this.ui.createCachedDamageGradient(); //  Chama UI para pré-gerar o gradiente
   }
 
   // Método para ativar o tremor de tela
@@ -481,7 +484,7 @@ class Game {
   setGameOver() {
     this.gameState = "gameOver";
     this.gameControls.style.display = "none";
-  } // NOVO MÉTODO: Função de easing para o decaimento do tremor (Quadratic Ease Out)
+  } //  Função de easing para o decaimento do tremor (Quadratic Ease Out)
   easeOutQuad(t) {
     return t * (2 - t);
   }
