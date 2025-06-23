@@ -39,10 +39,11 @@ class LaserOrb extends Orb {
 
         // DISPARA SOMENTE SE HOUVER UM ALVO E O JOGO ESTIVER RODANDO
         if (target) {
-          const u = this.player.upgrades.laserOrb; // Assume que u é definido como this.player.upgrades.laserOrb
+          /* const u = this.player.upgrades.laserOrb; // Assume que u é definido como this.player.upgrades.laserOrb
           this.game.aoeEffects.push(
             new LaserBeam(this.game, this, target, u.damage, u.pierce, u.chain)
-          );
+          ); */
+          this.game.triggerChainLightning(this, target);
           this.isFiring = true; // Ativa o feedback de disparo
           this.firingTimer = this.firingDuration;
           this.shootTimer = 0; // Reseta o timer APENAS após um disparo bem-sucedido

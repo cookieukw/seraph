@@ -75,6 +75,75 @@ Ao subir de nível, escolha uma de três melhorias aleatórias.
 - **Câmera e Parallax**: Câmera segue jogador com efeito de profundidade no fundo  
 - **Efeito de Tremor**: Tela treme ao sofrer dano (pode ser desativado no menu)  
 
+
+
+
+
+# Atualização 23/06/2025
+
+## 1. Controles e Jogabilidade Mobile
+
+### Implementação Completa dos Joysticks Virtuais
+- Ativamos a renderização dos joysticks que já estavam no código.
+- Corrigimos o bug onde o thumb saía da base do joystick.
+- Integramos o joystick de movimento ao `player.js`.
+- Integramos o joystick de mira para controlar o cajado e o disparo.
+
+### Adaptação do Terreno para Mobile
+- Alteramos o `terrain.js` para detectar modo mobile.
+- Elevamos o chão do mapa para liberar espaço para os joysticks sem atrapalhar a visão.
+
+### Melhorias de Usabilidade
+- Joysticks agora têm cor azulada e são semitransparentes.
+- Mira trava no centro quando o auto-aim está ativado.
+
+---
+
+## 2. Melhorias Visuais e de Feedback
+
+### Linha de Mira ("Mira Laser")
+- Linha tracejada dinâmica entre o personagem e o alvo.
+- Funciona com mouse, joystick e auto-aim.
+- Origem da mira corrigida para sair da ponta do cajado.
+- Mira agora funciona corretamente independente da posição da câmera.
+
+### Novo LightningBolt (Tempestade)
+- Raio agora é irregular, vem do topo e tem brilho + núcleo.
+- Visual renovado e muito mais impactante.
+
+### ChainLightning (Raio Encadeado)
+- "Raio do Orbe" virou um verdadeiro choque encadeado.
+- Nova classe `ChainLightningSegment` desenha raios animados entre inimigos.
+
+---
+
+## 3. Novas Habilidades e Refatoração do Sistema de Upgrades
+
+### Nova Habilidade: "Sabedoria do Mago"
+- Novo upgrade `xp_boost`: +20% de XP por nível.
+- `player.gainXP()` adaptado para aplicar o bônus.
+
+### Refatoração Completa do `upgradePool`
+- Sistema agora é data-driven.
+- Habilidades como Ricochete, Perfuração, Vampirismo e Orbes seguem novo padrão.
+- Tempestade agora tem 10 níveis com dano, cooldown e contagem progressiva.
+- Títulos dos upgrades usam algarismos romanos (ex: Tempestade III).
+
+---
+
+## 4. Correções de Bugs Críticos
+
+### Correção Definitiva da Tempestade
+- Bug de renderização: raio invisível por erro no `game.js`.
+- Bug de lógica: inimigos tipo `ParasiteEnemy` não eram alvos.
+- Bug de level: Tempestade I não funcionava por uso incorreto da variável `count`.
+- Tudo migrado para o sistema novo baseado em `level`.
+
+### Correção de Coordenadas do Mouse e da Mira
+- Mira desalinhada ao mover para direita do mapa corrigida.
+- `getBoundingClientRect` usado para coordenadas exatas do mouse.
+- Lógica da câmera agora aplicada corretamente para manter a mira precisa.
+
 # ⚙️ Registro de Atualização - 20 de Junho de 2025 ⚙️
 
 Olá, Sobrevivente!  

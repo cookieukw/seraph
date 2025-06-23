@@ -57,6 +57,7 @@ class VirtualJoystick {
             x: 0,
             y: 0,
             width: canvasWidth / 2,
+            width: canvasWidth / 2,
             height: canvasHeight,
           }
         : {
@@ -66,7 +67,7 @@ class VirtualJoystick {
             height: canvasHeight,
           };
 
-    const margin = 90;
+    const margin = 10;
     if (this.config.area === "left") {
       this.center = {
         x: margin + this.config.outerRadius,

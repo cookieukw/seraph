@@ -1,4 +1,4 @@
-// js/game_design/terrain.js
+//
 
 class Terrain {
   constructor(game) {
@@ -8,11 +8,6 @@ class Terrain {
     this.rows = Math.ceil(this.game.height / this.tileSize);
     this.worldWidth = this.cols * this.tileSize;
     this.ground = [];
-
-
-    // Verifica se o jogo está no modo mobile (com joysticks)
-    // Acessamos a informação através do input handler que já existe no seu jogo.
-    const isMobile = this.game.input?.joysticksEnabled;
 
     // Define a altura do buffer (espaço vazio) na parte inferior da tela.
     // No mobile, o buffer será maior para elevar o nível do chão.

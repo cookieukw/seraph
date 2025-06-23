@@ -41,6 +41,7 @@ const upgradePool = [
       },
     ],
   },
+
   {
     id: "hp_up",
     maxLevel: 5,
@@ -88,6 +89,7 @@ const upgradePool = [
       },
     ],
   },
+
   {
     id: "armor_up",
     maxLevel: 5,
@@ -130,84 +132,73 @@ const upgradePool = [
       },
     ],
   },
+
   {
     id: "atk_speed_up",
     maxLevel: 5,
     initialValues: { value: 300, timer: 0 },
+    apply: (p, levelIndex) => {
+      const newStats = upgradePool.find((up) => up.id === "atk_speed_up")
+        .levels[levelIndex].stats;
+      Object.assign(p.upgrades.atk_speed_up, newStats);
+    },
     levels: [
       {
         title: "Agilidade I",
         description: "Aumenta a vel. de ataque em 15%.",
-        apply: (p) => {
-          p.upgrades.atk_speed_up.value *= 0.85;
-        },
+        stats: { value: 300 * 0.85 },
       },
       {
         title: "Agilidade II",
         description: "Aumenta a vel. de ataque em 15%.",
-        apply: (p) => {
-          p.upgrades.atk_speed_up.value *= 0.85;
-        },
+        stats: { value: 300 * 0.85 * 0.85 },
       },
       {
         title: "Agilidade III",
         description: "Aumenta a vel. de ataque em 15%.",
-        apply: (p) => {
-          p.upgrades.atk_speed_up.value *= 0.85;
-        },
+        stats: { value: 300 * 0.85 * 0.85 * 0.85 },
       },
       {
         title: "Agilidade IV",
         description: "Aumenta a vel. de ataque em 15%.",
-        apply: (p) => {
-          p.upgrades.atk_speed_up.value *= 0.85;
-        },
+        stats: { value: 300 * 0.85 * 0.85 * 0.85 * 0.85 },
       },
       {
         title: "Agilidade V",
         description: "Aumenta a vel. de ataque em 20%.",
-        apply: (p) => {
-          p.upgrades.atk_speed_up.value *= 0.8;
-        },
+        stats: { value: 300 * 0.85 * 0.85 * 0.85 * 0.85 * 0.8 },
       },
     ],
   },
+
   {
     id: "vampirism_up",
     maxLevel: 3,
     initialValues: { value: 0 },
+    apply: (p) => {
+      p.upgrades.vampirism_up.value += 0.05;
+    },
     levels: [
-      {
-        title: "Vampirismo I",
-        description: "Converte 5% do dano em vida.",
-        apply: (p) => {
-          p.upgrades.vampirism_up.value += 0.05;
-        },
-      },
+      { title: "Vampirismo I", description: "Converte 5% do dano em vida." },
       {
         title: "Vampirismo II",
-        description: "Converte 5% do dano em vida.",
-        apply: (p) => {
-          p.upgrades.vampirism_up.value += 0.05;
-        },
+        description: "Aumenta a conversão de vida para 10%.",
       },
       {
         title: "Vampirismo III",
-        description: "Converte 5% do dano em vida.",
-        apply: (p) => {
-          p.upgrades.vampirism_up.value += 0.05;
-        },
+        description: "Aumenta a conversão de vida para 15%.",
       },
     ],
   },
+
   {
     id: "hasHomingProjectiles",
     maxLevel: 1,
     initialValues: { value: false },
     levels: [
       {
-        title: "Olho do Cacador",
-        description: "Projeteis perseguem inimigos.",
+        title: "Olho do Caçador",
+        description: "Projéteis perseguem inimigos.",
         apply: (p) => {
           p.upgrades.hasHomingProjectiles.value = true;
         },
@@ -220,8 +211,8 @@ const upgradePool = [
     initialValues: { damage: 0, radius: 0 },
     levels: [
       {
-        title: "Explosao Cadaverica",
-        description: "Inimigos explodem ao morrer, causando 3 de dano em area.",
+        title: "Explosão Cadavérica",
+        description: "Inimigos explodem ao morrer, causando 3 de dano em área.",
         apply: (p) => {
           p.upgrades.corpseExplosion.damage = 3;
           p.upgrades.corpseExplosion.radius = 50;
@@ -229,122 +220,85 @@ const upgradePool = [
       },
     ],
   },
+
   {
     id: "lightningStrike",
-    maxLevel: 5,
-    initialValues: {
-      damage: 0,
-      radius: 40,
-      cooldown: 8000,
-      timer: 0,
-      count: 0,
+    maxLevel: 10,
+    initialValues: { timer: 0 },
+    apply: (p, levelIndex) => {
+      const upgradeData = upgradePool.find((up) => up.id === "lightningStrike");
+      const newStats = upgradeData.levels[levelIndex].stats;
+      Object.assign(p.upgrades.lightningStrike, newStats);
     },
-    levels: [
-      {
-        title: "Tempestade I",
-        description: "1 raio cai a cada 8s causando 3 de dano.",
-        apply: (p) => {
-          p.upgrades.lightningStrike.count = 1;
-          p.upgrades.lightningStrike.damage = 3;
-        },
-      },
-      {
-        title: "Tempestade II",
-        description: "2 raios caem a cada 8s causando 3 de dano.",
-        apply: (p) => {
-          p.upgrades.lightningStrike.count = 2;
-        },
-      },
-      {
-        title: "Tempestade III",
-        description: "2 raios caem a cada 6s causando 4 de dano.",
-        apply: (p) => {
-          p.upgrades.lightningStrike.cooldown = 6000;
-          p.upgrades.lightningStrike.damage = 4;
-        },
-      },
-      {
-        title: "Tempestade IV",
-        description: "3 raios caem a cada 6s causando 4 de dano.",
-        apply: (p) => {
-          p.upgrades.lightningStrike.count = 3;
-        },
-      },
-      {
-        title: "Tempestade V",
-        description: "4 raios caem a cada 5s causando 5 de dano.",
-        apply: (p) => {
-          p.upgrades.lightningStrike.cooldown = 5000;
-          p.upgrades.lightningStrike.count = 4;
-          p.upgrades.lightningStrike.damage = 5;
-        },
-      },
-    ],
+    levels: (() => {
+      const romanNumerals = [
+        "I",
+        "II",
+        "III",
+        "IV",
+        "V",
+        "VI",
+        "VII",
+        "VIII",
+        "IX",
+        "X",
+      ];
+      return Array.from({ length: 10 }, (_, i) => {
+        const count = 1 + i * 3;
+        const damage = 3 + i * 2;
+        const cooldown = 8000 - i * 300;
+        return {
+          title: `Tempestade ${romanNumerals[i]}`,
+          description: `${count} raio(s) caem a cada ${
+            cooldown / 1000
+          }s causando ${damage} de dano.`,
+          stats: {
+            count: count,
+            damage: damage,
+            cooldown: cooldown,
+            radius: 40,
+          },
+        };
+      });
+    })(),
   },
+
   {
     id: "ricochet",
     maxLevel: 3,
     initialValues: { value: 0 },
+    apply: (p) => {
+      p.upgrades.ricochet.value += 1;
+    },
     levels: [
-      {
-        title: "Ricochete I",
-        description: "Tiros quicam 1 vez.",
-        apply: (p) => {
-          p.upgrades.ricochet.value += 1;
-        },
-      },
-      {
-        title: "Ricochete II",
-        description: "Tiros quicam 1 vez.",
-        apply: (p) => {
-          p.upgrades.ricochet.value += 1;
-        },
-      },
-      {
-        title: "Ricochete III",
-        description: "Tiros quicam 1 vez.",
-        apply: (p) => {
-          p.upgrades.ricochet.value += 1;
-        },
-      },
+      { title: "Ricochete I", description: "Tiros quicam 1 vez." },
+      { title: "Ricochete II", description: "Tiros quicam 2 vezes." },
+      { title: "Ricochete III", description: "Tiros quicam 3 vezes." },
     ],
   },
+
   {
     id: "pierce",
     maxLevel: 3,
     initialValues: { value: 0 },
+    apply: (p) => {
+      p.upgrades.pierce.value += 1;
+    },
     levels: [
-      {
-        title: "Perfuracao I",
-        description: "Tiros perfuram 1 inimigo.",
-        apply: (p) => {
-          p.upgrades.pierce.value += 1;
-        },
-      },
-      {
-        title: "Perfuracao II",
-        description: "Tiros perfuram 1 inimigo.",
-        apply: (p) => {
-          p.upgrades.pierce.value += 1;
-        },
-      },
-      {
-        title: "Perfuracao III",
-        description: "Tiros perfuram 1 inimigo.",
-        apply: (p) => {
-          p.upgrades.pierce.value += 1;
-        },
-      },
+      { title: "Perfuração I", description: "Tiros perfuram 1 inimigo." },
+      { title: "Perfuração II", description: "Tiros perfuram 2 inimigos." },
+      { title: "Perfuração III", description: "Tiros perfuram 3 inimigos." },
     ],
   },
+
   {
     id: "shrapnel",
     maxLevel: 1,
     initialValues: { value: 0 },
     levels: [
       {
-        title: "Estilhacos",
-        description: "Tiros soltam 3 mini-projeteis ao colidir.",
+        title: "Estilhaços",
+        description: "Tiros soltam 3 mini-projéteis ao colidir.",
         apply: (p) => {
           p.upgrades.shrapnel.value = 3;
         },
@@ -357,7 +311,7 @@ const upgradePool = [
     initialValues: { chance: 0 },
     levels: [
       {
-        title: "Combustao",
+        title: "Combustão",
         description: "Tiros tem 15% de chance de queimar inimigos.",
         apply: (p) => {
           p.upgrades.combustion.chance = 0.15;
@@ -379,61 +333,54 @@ const upgradePool = [
       },
     ],
   },
- {
-   id: "bloodthirst",
-   maxLevel: 5, // MODIFICAÇÃO: Aumenta o número máximo de níveis
-   initialValues: { healAmount: 0, killsPerHeal: 0, currentKills: 0 }, // MODIFICAÇÃO: Adiciona valores iniciais para cura, kills por cura e contador de kills
-   levels: [
-     {
-       title: "Sede de Sangue I",
-       description: "Cura 5 de HP a cada 10 inimigos derrotados.",
-       apply: (p) => {
-         p.upgrades.bloodthirst.healAmount = 5; 
-         p.upgrades.bloodthirst.killsPerHeal = 10; 
-       },
-     },
-     {
-       title: "Sede de Sangue II",
-       description: "Cura 7 de HP a cada 10 inimigos derrotados.",
-       apply: (p) => {
-         p.upgrades.bloodthirst.healAmount = 7;
-         p.upgrades.bloodthirst.killsPerHeal = 10;
-       },
-     },
-     {
-       title: "Sede de Sangue III",
-       description: "Cura 10 de HP a cada 10 inimigos derrotados.",
-       apply: (p) => {
-         p.upgrades.bloodthirst.healAmount = 10;
-         p.upgrades.bloodthirst.killsPerHeal = 10;
-       },
-     },
-     {
-       title: "Sede de Sangue IV",
-       description: "Cura 10 de HP a cada 8 inimigos derrotados.", 
-       apply: (p) => {
-         p.upgrades.bloodthirst.healAmount = 10;
-         p.upgrades.bloodthirst.killsPerHeal = 8;
-       },
-     },
-     {
-       title: "Sede de Sangue V",
-       description: "Cura 15 de HP a cada 5 inimigos derrotados.",
-       apply: (p) => {
-         p.upgrades.bloodthirst.healAmount = 15;
-         p.upgrades.bloodthirst.killsPerHeal = 5;
-       },
-     },
-   ],
- },
+
+  {
+    id: "bloodthirst",
+    maxLevel: 5,
+    initialValues: { currentKills: 0 },
+    apply: (p, levelIndex) => {
+      const newStats = upgradePool.find((up) => up.id === "bloodthirst").levels[
+        levelIndex
+      ].stats;
+      Object.assign(p.upgrades.bloodthirst, newStats);
+    },
+    levels: [
+      {
+        title: "Sede de Sangue I",
+        description: "Cura 5 de HP a cada 10 inimigos derrotados.",
+        stats: { healAmount: 5, killsPerHeal: 10 },
+      },
+      {
+        title: "Sede de Sangue II",
+        description: "Cura 7 de HP a cada 10 inimigos derrotados.",
+        stats: { healAmount: 7, killsPerHeal: 10 },
+      },
+      {
+        title: "Sede de Sangue III",
+        description: "Cura 10 de HP a cada 10 inimigos derrotados.",
+        stats: { healAmount: 10, killsPerHeal: 10 },
+      },
+      {
+        title: "Sede de Sangue IV",
+        description: "Cura 10 de HP a cada 8 inimigos derrotados.",
+        stats: { healAmount: 10, killsPerHeal: 8 },
+      },
+      {
+        title: "Sede de Sangue V",
+        description: "Cura 15 de HP a cada 5 inimigos derrotados.",
+        stats: { healAmount: 15, killsPerHeal: 5 },
+      },
+    ],
+  },
+
   {
     id: "temp_armor",
     maxLevel: 1,
     initialValues: { value: 0, timer: 0 },
     levels: [
       {
-        title: "Bencao do Sabio",
-        description: "Ganha +15 de armadura por 25s ao subir de nivel.",
+        title: "Bênção do Sábio",
+        description: "Ganha +15 de armadura por 25s ao subir de nível.",
         apply: (p) => {
           p.upgrades.temp_armor.value = 15;
           p.upgrades.temp_armor.timer = 25000;
@@ -444,10 +391,12 @@ const upgradePool = [
   {
     id: "revive",
     maxLevel: 1,
-    initialValues: {},
+    initialValues: {
+      /* ... */
+    },
     levels: [
       {
-        title: "Fenix",
+        title: "Fênix",
         description: "Ressuscita com 25% da vida. (1x por partida)",
         apply: (p) => {},
       },
@@ -460,56 +409,79 @@ const upgradePool = [
     levels: [
       {
         title: "Aura de Espinhos",
-        description: "Causa dano em area ao ser atingido.",
+        description: "Causa dano em área ao ser atingido.",
         apply: (p) => {},
       },
     ],
   },
   {
     id: "frenzy",
+
     maxLevel: 1,
+
     initialValues: { speedPerStack: 1 },
+
     levels: [
       {
         title: "Frenesi",
+
         description:
           "Cada abate aumenta sua vel. de movimento por 3s. Acumula.",
+
         apply: (p) => {},
       },
     ],
   },
+
   {
     id: "infection",
+
     maxLevel: 1,
+
     initialValues: { chance: 0.2, damage: 6, radius: 50 },
+
     levels: [
       {
         title: "Peste Virulenta",
+
         description: "Inimigos infectados explodem e espalham a infeccao.",
+
         apply: (p) => {},
       },
     ],
   },
+
   {
     id: "damage_barrier",
+
     maxLevel: 1,
+
     initialValues: { reduction: 0.25 },
+
     levels: [
       {
         title: "Barreira Protetora",
+
         description: "Reduz o dano recebido em 25%.",
+
         apply: (p) => {},
       },
     ],
   },
+
   {
     id: "lethal_barrier",
+
     maxLevel: 1,
+
     initialValues: {},
+
     levels: [
       {
         title: "Ultimo Suspiro",
+
         description: "Evita um ataque letal. (1x por vida)",
+
         apply: (p) => {},
       },
     ],
@@ -518,27 +490,18 @@ const upgradePool = [
     id: "shootingOrb",
     maxLevel: 3,
     initialValues: { count: 0 },
+    apply: (p) => {
+      p.addOrb("shooter");
+    },
     levels: [
       {
-        title: "Orbe de Disparo",
-        description: "Adiciona um orbe que atira com voce.",
-        apply: (p) => {
-          p.addOrb("shooter");
-        },
+        title: "Orbe de Disparo I",
+        description: "Adiciona um orbe que atira com você.",
       },
-      {
-        title: "Orbe de Disparo II",
-        description: "Adiciona um segundo orbe.",
-        apply: (p) => {
-          p.addOrb("shooter");
-        },
-      },
+      { title: "Orbe de Disparo II", description: "Adiciona um segundo orbe." },
       {
         title: "Orbe de Disparo III",
         description: "Adiciona um terceiro orbe.",
-        apply: (p) => {
-          p.addOrb("shooter");
-        },
       },
     ],
   },
@@ -570,10 +533,57 @@ const upgradePool = [
       },
     ],
   },
+  {
+    title: "Raio Encadeado",
+
+    description: "Raios do orbe atingem +2 alvos.",
+
+    apply: (p) => {
+      p.upgrades.laserOrb.chain = 2;
+    },
+  },
+
+  {
+    title: "Raio Perfurante",
+
+    description: "Raios do orbe perfuram todos os alvos.",
+
+    apply: (p) => {
+      p.upgrades.laserOrb.pierce = 99;
+    },
+  },
+  {
+    id: "xp_boost",
+    maxLevel: 3,
+    initialValues: { multiplier: 1.0 }, // Começa com 1.0 (100% do XP, sem bônus)
+    
+    // Padrão "Ação Repetida": a cada nível, adiciona 0.2 (20%) ao multiplicador.
+    apply: (p) => {
+      p.upgrades.xp_boost.multiplier += 0.2;
+    },
+    
+    levels: [
+      {
+        title: "Sabedoria do Mago I",
+        description: "Ganha 20% a mais de XP ao derrotar inimigos."
+      },
+      {
+        title: "Sabedoria do Mago II",
+        description: "Bônus de XP aumentado para 40%."
+      },
+      {
+        title: "Sabedoria do Mago III",
+        description: "Bônus de XP aumentado para 60%."
+      },
+    ]
+  },
 ];
 
-const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-const DEBUG = true; // Modo de depuração, pode ser ativado para testes  
+const isMobile =
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  ); //isMobileUserAgent();
+const DEBUG = false;
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");

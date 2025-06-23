@@ -69,13 +69,23 @@ class Game {
     this.debugMenu.classList.remove("active");
 
     if (!this.listenersAdded) {
+      // Pega uma referência ao elemento canvas para o cálculo
+      const canvas = this.ctx.canvas;
+
       window.addEventListener("mousemove", (e) => {
         if (this.mouse) {
-          this.mouse.x = e.clientX;
-          this.mouse.y = e.clientY;
+          // --- INÍCIO DA CORREÇÃO ---
+          // Pega o tamanho e a posição do canvas na página
+          const rect = canvas.getBoundingClientRect();
+
+          // Calcula a posição exata do mouse DENTRO do canvas
+          this.mouse.x = e.clientX - rect.left;
+          this.mouse.y = e.clientY - rect.top;
         }
       });
       window.addEventListener("mousedown", (e) => {
+        // Esta verificação também pode ser melhorada para usar o rect
+        const canvas = this.ctx.canvas;
         if (e.target === canvas) this.isMouseDown = true;
       });
       window.addEventListener("mouseup", (e) => {
@@ -116,9 +126,11 @@ class Game {
         this.shakeOffsetY = 0;
       }
     }
+
     this.gameTime += deltaTime;
     this.player.update(this.input, this.mouse, deltaTime);
     this.camera.update();
+
     this.scoreTimer += deltaTime;
     if (this.scoreTimer >= this.scoreInterval) {
       this.score += 50;
@@ -174,9 +186,9 @@ class Game {
       this.player, // O player é sempre desenhado
     ].forEach((obj) => obj.draw(context));
 
-    context.restore(); // Restaura o estado após translação da câmera e do tremor
-
+    this.player.drawAimingLine(context);
     this.ui.draw(context); // A UI geralmente fica fixa e não treme
+    context.restore(); // Restaura o estado após translação da câmera e do tremor
 
     this.input.renderJoysticks(context);
     if (this.gameState === "gameOver") {
@@ -274,6 +286,15 @@ class Game {
               p.damage * this.player.upgrades.vampirism_up.value
             );
           if (p.markedForDeletion) break;
+
+          if (Math.random() < this.player.upgrades.frost_shot.chance) {
+            e.statusEffects.slow = {
+              active: true,
+              factor: this.player.upgrades.frost_shot.slowFactor,
+              duration: this.player.upgrades.frost_shot.duration,
+              timer: 0,
+            };
+          }
         }
       }
     });
@@ -343,6 +364,65 @@ class Game {
       }
     });
     return closestEnemy;
+  }
+   //Encontra o próximo alvo para o raio encadeado
+  findNextChainTarget(startEntity, excludedEnemies, maxRange = 200) {
+    let closestEnemy = null;
+    let minDistance = maxRange; // Define um alcance máximo para o raio pular
+
+    this.enemies.forEach((enemy) => {
+      // Pula o próprio inimigo, inimigos já atingidos ou marcados para deleção
+      if (enemy === startEntity || excludedEnemies.has(enemy) || enemy.markedForDeletion) {
+        return;
+      }
+
+      const dx = enemy.x + enemy.width / 2 - startEntity.x;
+      const dy = enemy.y + enemy.height / 2 - startEntity.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestEnemy = enemy;
+      }
+    });
+
+    return closestEnemy;
+  }
+
+  //Gerencia a criação da corrente de raios
+ triggerChainLightning(sourceOrb, initialTarget) {
+    const u = this.player.upgrades.laserOrb;
+    const maxChains = u.chain || 0;
+    const damage = u.damage || 5;
+
+    const effectsToCreate = [];
+    const enemiesHitInChain = new Set();
+    
+    let currentSource = sourceOrb;
+    let currentTarget = initialTarget;
+    let chainsLeft = maxChains + 1;
+
+    while (chainsLeft > 0 && currentTarget) {
+      enemiesHitInChain.add(currentTarget);
+      currentTarget.takeDamage(damage);
+
+      // --- MUDANÇA PRINCIPAL AQUI ---
+      // Cria a nossa nova animação de choque em vez do LaserBeam
+      effectsToCreate.push(new ChainLightningSegment(this, currentSource, currentTarget,"purple"));
+      // --- FIM DA MUDANÇA ---
+      
+      chainsLeft--;
+      
+      if (chainsLeft > 0) {
+        const nextTarget = this.findNextChainTarget(currentTarget, enemiesHitInChain);
+        currentSource = currentTarget;
+        currentTarget = nextTarget;
+      } else {
+        break;
+      }
+    }
+
+    this.aoeEffects.push(...effectsToCreate);
   }
   togglePause() {
     if (this.isDebugMenuOpen) return;
@@ -426,14 +506,21 @@ class Game {
       )
     );
   }
+
+  // Em js/game_design/game.js
+
   triggerLightningStrikes() {
     const u = this.player.upgrades.lightningStrike;
-    const availableEnemies = this.enemies.filter(
-      (e) => !(e instanceof ParasiteEnemy)
-    );
+    const availableEnemies = this.enemies.filter((e) => !e.markedForDeletion);
+
+    if (availableEnemies.length === 0) return;
+
+    // A função volta a ser simples, apenas lê o valor de u.count
+    // que foi definido dinamicamente pelo upgrade.
     for (let i = 0; i < u.count; i++) {
       const target =
         availableEnemies[Math.floor(Math.random() * availableEnemies.length)];
+
       if (target) {
         this.aoeEffects.push(
           new LightningBolt(
@@ -510,10 +597,21 @@ class Game {
     });
     this.levelUpScreen.classList.add("active");
   }
+
   selectUpgrade(upgrade, fromLevelUp = false) {
     const currentLevel = this.player.upgrades[upgrade.id].level;
     if (currentLevel < upgrade.maxLevel) {
-      upgrade.levels[currentLevel].apply(this.player);
+      // --- LÓGICA DINÂMICA ---
+      // Verifica se o upgrade tem uma função 'apply' genérica no nível raiz
+      if (typeof upgrade.apply === "function") {
+        // Passa o jogador e o índice do nível a ser aplicado (que é o nível atual)
+        upgrade.apply(this.player, currentLevel);
+      } else {
+        // Mantém a compatibilidade com o formato antigo para outros upgrades
+        upgrade.levels[currentLevel].apply(this.player);
+      }
+      // --- FIM DA LÓGICA ---
+
       if (fromLevelUp) {
         this.player.upgrades[upgrade.id].level++;
       }
@@ -524,16 +622,21 @@ class Game {
       this.gameState = "running";
     }
   }
+
   getUpgradeChoices(count) {
+    // Pega todas as habilidades que ainda não estão no nível máximo
     const availableUpgrades = upgradePool.filter(
       (up) =>
         this.player.upgrades[up.id] &&
         this.player.upgrades[up.id].level < up.maxLevel
     );
+
+    // Embaralha TODAS as habilidades disponíveis
     const shuffled = [...availableUpgrades].sort(() => 0.5 - Math.random());
+
+    // Retorna a quantidade solicitada do topo da lista embaralhada
     return shuffled.slice(0, count);
   }
-
   run() {
     let lastTime = 0;
     const animate = (timestamp) => {

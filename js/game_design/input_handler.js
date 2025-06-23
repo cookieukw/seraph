@@ -2,10 +2,10 @@ class InputHandler {
   constructor(game) {
     this.game = game;
     this.keys = [];
-    this.joysticksEnabled = false;
+    this.joysticksEnabled = false
 
     //  Flag para forçar joysticks no desktop (para testes)
-    this.forceMobileControlsForTesting = false; // Mude para TRUE para testar joysticks no desktop
+    this.forceMobileControlsForTesting = false  // Mude para TRUE para testar joysticks no desktop
 
     this.moveJoystickDirection = { x: 0, y: 0 };
     this.aimJoystickDirection = { x: 0, y: 0 };
@@ -61,10 +61,7 @@ class InputHandler {
     const gameCanvas = this.game.ctx.canvas;
 
     this.joysticksEnabled =
-      this.forceMobileControlsForTesting ||
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      navigator.msMaxTouchPoints > 0;
+      this.forceMobileControlsForTesting || isMobile
 
     if (this.joysticksEnabled) {
       const instructions = document.getElementById("instructions-ui");
