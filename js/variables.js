@@ -572,6 +572,9 @@ const upgradePool = [
   },
 ];
 
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const DEBUG = true; // Modo de depuração, pode ser ativado para testes  
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
