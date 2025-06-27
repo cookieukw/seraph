@@ -10,9 +10,9 @@ class ChainLightningSegment {
     this.timer = 0;
     this.duration = 250; // Duração total do efeito em ms
     this.markedForDeletion = false;
-    
-    this.color = color; // Amarelo bem claro
-    
+
+    this.color = color; // Amarelo bem claro (por padrão)
+
     // Gera os pontos para a forma irregular do raio
     this.segments = this.createJaggedSegments();
   }
