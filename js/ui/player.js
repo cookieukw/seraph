@@ -36,6 +36,10 @@ class Player {
     this.parasiteParticleCount = 1; // Quantidade de partículas por emissão (mantenha baixo para não sobrecarregar)
     this.aimTarget = { x: this.x, y: this.y }; // Guarda as coordenadas do alvo da mira
 
+
+    this.timeInBossLaser = 0; // Conta o tempo contínuo dentro do laser
+    this.timeSinceLastLaserDamage = 0; // Controla o intervalo entre os "ticks" de dano
+    
     this.lightningCharged = false;
     upgradePool.forEach((up) => {
       this.upgrades[up.id] = { level: 0, ...up.initialValues };
@@ -90,7 +94,7 @@ class Player {
     const mouseYInWorld = mouse.y + this.game.camera.y; // Adicionado "+ this.game.camera.y"
 
     if (this.game.autoAimActive) {
-      const closestEnemy = this.game.getClosestEnemy(this);
+      const closestEnemy = this.game.getClosestTarget(this);
       if (closestEnemy) {
         this.staffAngle = Math.atan2(
           closestEnemy.y - this.y,
@@ -161,28 +165,26 @@ class Player {
       }
     }
 
-    if (this.upgrades.lightningStrike.level > 0) {
-      // Se a habilidade já está carregada, verifica se um inimigo apareceu
+    // Dentro da classe Player, no método update:
+    if (this.upgrades.lightningStrike.level >= 0) {
       if (this.lightningCharged) {
-        // Procura por um alvo a cada frame
-        const hasTarget = this.game.enemies.some(
-          (e) => !(e instanceof ParasiteEnemy) && !e.markedForDeletion
-        );
-        if (hasTarget) {
-          console.log("Alvo encontrado! Disparando raio carregado.");
+        // CORREÇÃO AQUI: Use getDamageableTargets() para verificar se há alvos (incluindo o chefe)
+        const availableTargets = this.game.getDamageableTargets(); // Obtém TODOS os alvos válidos
+        
+        // Se há pelo menos um alvo danificável (mob ou chefe)
+        if (availableTargets.length > 0) { 
+        
           this.game.triggerLightningStrikes();
           this.lightningCharged = false; // Descarrega a habilidade
         }
       } else {
-        // Se não estiver carregada, avança o timer
         this.upgrades.lightningStrike.timer += deltaTime;
         if (
           this.upgrades.lightningStrike.timer >=
           this.upgrades.lightningStrike.cooldown
         ) {
-          console.log("Timer completo! Carregando a Tempestade.");
-          this.upgrades.lightningStrike.timer = 0; // Reseta o timer
-          this.lightningCharged = true; // Armazena a carga
+          this.upgrades.lightningStrike.timer = 0;
+          this.lightningCharged = true;
         }
       }
     }
@@ -192,6 +194,8 @@ class Player {
       if (this.upgrades.temp_armor.timer <= 0)
         this.upgrades.temp_armor.value = 0;
     }
+    this.timeSinceLastLaserDamage += deltaTime; // Atualiza o timer de dano a cada quadro
+      
     this.orbs.forEach((orb) => orb.update(deltaTime));
   }
   draw(context) {
@@ -284,7 +288,7 @@ class Player {
   }
 
   drawAimingLine(context) {
-    if (this.game.autoAimActive && this.game.getClosestEnemy(this)) {
+    if (this.game.autoAimActive && this.game.getClosestTarget(this)) {
       return;
     }
 
