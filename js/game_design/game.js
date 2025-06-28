@@ -40,6 +40,16 @@ class Game {
     this.gameTime = 0;
     this.scoreTimer = 0;
     this.scoreInterval = 2000;
+  
+
+     this.bossDefeatedFlag = false; //  flag para controlar a derrota do boss
+    this.initialEnemySpawnRate = 2000; // Guarda a taxa inicial
+    this.enemySpawnRate = this.initialEnemySpawnRate; //
+
+    this.boss = null; // O chefe começa como nulo
+    this.bossTriggered = false; // Para garantir que o chefe seja criado apenas uma vez
+    this.enemySpawnRate = 2000; // Mantém a taxa de spawn de inimigos normais
+    this.backgroundParticles = [];
 
     this.pauseMenu = document.getElementById("pause-menu");
     this.levelUpScreen = document.getElementById("level-up-screen");
@@ -68,13 +78,23 @@ class Game {
     this.levelUpScreen.classList.remove("active");
     this.debugMenu.classList.remove("active");
 
+   this.boss = null; // O chefe começa como nulo
+    this.bossTriggered = false; // Para garantir que o chefe seja criado apenas uma vez
+    this.initialEnemySpawnRate = 2000; // Guarda a taxa inicial de spawn de inimigos
+    this.enemySpawnRate = this.initialEnemySpawnRate;
+    this.bossDefeatedFlag = false; // Flag para controlar o estado de derrota do boss
+
+
+    for (let i = 0; i < 150; i++) {
+      this.backgroundParticles.push(new BackgroundParticle(this));
+    }
+
     if (!this.listenersAdded) {
       // Pega uma referência ao elemento canvas para o cálculo
       const canvas = this.ctx.canvas;
 
       window.addEventListener("mousemove", (e) => {
         if (this.mouse) {
-          // --- INÍCIO DA CORREÇÃO ---
           // Pega o tamanho e a posição do canvas na página
           const rect = canvas.getBoundingClientRect();
 
@@ -108,6 +128,56 @@ class Game {
   }
   update(deltaTime) {
     deltaTime = Math.min(deltaTime, 100); // Não permite que deltaTime seja maior que 100ms
+    // Condição para invocar o chefe
+     // Condição para invocar o chefe
+    if (this.score >= 5000 && !this.bossTriggered && !this.bossDefeatedFlag) { //
+      this.bossTriggered = true; //
+      this.boss = new Boss(this); // Cria o chefe
+      this.enemies = []; // Limpa os inimigos normais da tela
+      // Opcional: Reinicie o timer para evitar um spawn imediato de mobs logo após a limpeza.
+      this.enemySpawnTimer = 0.2;
+    }
+
+    this.backgroundParticles.forEach((p) => p.update()); //
+
+    // Atualiza o chefe se ele existir
+    if (this.boss) { //
+      this.boss.update(deltaTime, this.player); //
+      // Verifica se o boss foi marcado para deleção neste frame e se ainda não marcamos como derrotado
+      if (this.boss.markedForDeletion && !this.bossDefeatedFlag) { //
+          this.bossDefeated(); // Chama a função que lida com a derrota do boss
+      }
+    }
+
+    // Lógica consolidada para gerar inimigos normais
+    // Se não há um chefe ativo no momento:
+    if (!this.boss) { //
+        // Decide a taxa de spawn baseada no estado do bossDefeatedFlag
+        if (this.bossDefeatedFlag) { // Se o boss foi derrotado
+            // Acelera o spawn após a derrota do boss
+            this.enemySpawnRate = this.initialEnemySpawnRate / 3;
+        } else if (!this.bossTriggered) { // Se o boss ainda não foi invocado (antes de score 3)
+            // Mantém a taxa normal de spawn antes do boss aparecer
+            this.enemySpawnRate = this.initialEnemySpawnRate;
+        }
+        // Se this.bossTriggered for true mas this.boss for null E bossDefeatedFlag for false,
+        // significa que o boss está em transição ou foi derrotado mas a flag ainda não foi processada.
+        // Neste caso, a lógica cairia aqui e continuaria spawnando na taxa atual (ou a última definida).
+
+        this.enemySpawnTimer += deltaTime; //
+        if (this.enemySpawnTimer > this.enemySpawnRate) { //
+            const enemyType = Math.random(); //
+            if (enemyType > 0.8) { //
+                this.enemies.push(new ParasiteEnemy(this)); //
+            } else if (enemyType > 0.5) { //
+                this.enemies.push(new SpiralEnemy(this)); //
+            } else { //
+                this.enemies.push(new ShooterEnemy(this)); //
+            }
+            this.enemySpawnTimer = 0; //
+        }
+    }
+
 
     if (this.shakeTimer > 0) {
       this.shakeTimer -= deltaTime;
@@ -136,18 +206,7 @@ class Game {
       this.score += 50;
       this.scoreTimer = 0;
     }
-    this.enemySpawnTimer += deltaTime;
-    if (this.enemySpawnTimer > this.enemySpawnRate) {
-      const enemyType = Math.random();
-      if (enemyType > 0.8) {
-        this.enemies.push(new ParasiteEnemy(this));
-      } else if (enemyType > 0.5) {
-        this.enemies.push(new SpiralEnemy(this));
-      } else {
-        this.enemies.push(new ShooterEnemy(this));
-      }
-      this.enemySpawnTimer = 0;
-    }
+
     [
       ...this.particles,
       ...this.projectiles,
@@ -164,10 +223,24 @@ class Game {
     this.particles = this.particles.filter((p) => !p.markedForDeletion);
     this.aoeEffects = this.aoeEffects.filter((aoe) => !aoe.markedForDeletion);
   }
+
+
+   bossDefeated() {
+    this.boss = null; // Remove a referência ao boss para ele sumir da tela
+    this.bossDefeatedFlag = true;
+    this.enemies = []; // Limpa quaisquer inimigos que sobraram no momento da derrota (se você quiser)
+    // A taxa de spawn será ajustada no update devido ao bossDefeatedFlag
+    this.enemySpawnTimer = 0; // Reseta o timer para o novo spawn acelerado começar logo
+
+    // Ativa o menu de seleção de upgrades
+    this.enterLevelUpState(5); // Seleciona 5 upgrades
+  }
   draw(context) {
     context.clearRect(0, 0, this.width, this.height);
-    this.background.draw(context);
+    // Desenha as partículas de fundo primeiro
+    this.backgroundParticles.forEach((p) => p.draw(context));
 
+    this.background.draw(context); // Desenha seu fundo parallax
     context.save(); // Salva o estado para a translação da câmera E do tremor
 
     context.translate(-this.camera.x, -this.camera.y); // Translação da câmera
@@ -176,6 +249,16 @@ class Game {
     }
 
     this.terrain.draw(context);
+
+    // Desenha o chefe e seus lasers
+    if (this.boss) {
+      this.boss.draw(context, this.player);
+
+      // Itera sobre os lasers do chefe e chama o método de desenho de cada um
+      this.boss.laserBeams.forEach((laser) => laser.draw(context));
+
+   //   this.boss.orbs.forEach((orb) => orb.draw(context));
+    }
 
     [
       ...this.particles.filter((p) => this.isInCameraView(p)),
@@ -187,8 +270,9 @@ class Game {
     ].forEach((obj) => obj.draw(context));
 
     this.player.drawAimingLine(context);
-    this.ui.draw(context); // A UI geralmente fica fixa e não treme
+
     context.restore(); // Restaura o estado após translação da câmera e do tremor
+    this.ui.draw(context); // A UI geralmente fica fixa e não treme
 
     this.input.renderJoysticks(context);
     if (this.gameState === "gameOver") {
@@ -254,68 +338,99 @@ class Game {
     );
     context.restore();
   }
-  checkCollisions() {
-    this.projectiles.forEach((p) => {
-      for (const e of this.enemies) {
-        if (p.markedForDeletion || e.markedForDeletion) continue;
-        const dx = p.x - (e.x + e.width / 2);
-        const dy = p.y - (e.y + e.height / 2);
-        if (Math.sqrt(dx * dx + dy * dy) < p.radius + e.width / 2) {
-          if (p.pierce > 0) {
-            p.pierce--;
-          } else {
-            p.markedForDeletion = true;
-          }
-          if (p.shrapnel > 0) {
-            this.createShrapnel(p.x, p.y, p.shrapnel);
-          }
-          if (Math.random() < p.combustionChance) {
-            e.statusEffects.combustion = {
-              active: true,
-              damage: 1,
-              duration: 3,
-              timer: 0,
-            };
-          }
-          if (Math.random() < p.infectionChance) {
-            e.statusEffects.infection.active = true;
-          }
-          e.takeDamage(p.damage);
-          if (this.player.upgrades.vampirism_up.value > 0)
-            this.player.heal(
-              p.damage * this.player.upgrades.vampirism_up.value
-            );
-          if (p.markedForDeletion) break;
 
-          if (Math.random() < this.player.upgrades.frost_shot.chance) {
-            e.statusEffects.slow = {
-              active: true,
-              factor: this.player.upgrades.frost_shot.slowFactor,
-              duration: this.player.upgrades.frost_shot.duration,
-              timer: 0,
-            };
+ 
+  checkCollisions() {
+    // 1. Colisão: Projéteis do Jogador vs. Todos os Alvos (Inimigos + Chefe)
+
+    this.projectiles.forEach((p) => {
+      if (p.markedForDeletion) return;
+      const allTargets = this.getDamageableTargets(); //
+
+      for (const target of allTargets) {
+        if (target.markedForDeletion) continue; //
+
+        const targetRadius = target.radius || target.width / 2; //
+        const targetCenterX = target.radius //
+          ? target.x //
+          : target.x + target.width / 2; //
+        const targetCenterY = target.radius //
+          ? target.y //
+          : target.y + target.height / 2; //
+
+        const dx = p.x - targetCenterX; //
+        const dy = p.y - targetCenterY; //
+
+       if (Math.sqrt(dx * dx + dy * dy) < p.radius + targetRadius) {
+            target.takeDamage(p.damage);
+
+            // Se p.pierce é 0, ele será marcado para deleção aqui
+            if (p.pierce > 0) {
+              p.pierce--;
+              if (p.pierce === 0) {
+                p.markedForDeletion = true; 
+              }
+            } else {
+              p.markedForDeletion = true; // <-- Isso vai destruir a bala curvada após 1 hit
+            }
+            // ... (restante da lógica de deleção e break)
           }
-        }
       }
     });
+
+    // 2. Colisão: Efeitos de Área (AoE) vs. Todos os Alvos (Inimigos + Chefe)  <-- A PEÇA QUE FALTAVA
+    this.aoeEffects.forEach((aoe) => {
+      if (aoe.markedForDeletion) return;
+      const allTargets = this.getDamageableTargets();
+      allTargets.forEach((target) => {
+        if (
+          target.markedForDeletion ||
+          !aoe.enemiesHit ||
+          aoe.enemiesHit.has(target)
+        )
+          return;
+        const targetRadius = target.radius || target.width / 2;
+        const targetCenterX = target.radius
+          ? target.x
+          : target.x + target.width / 2;
+        const targetCenterY = target.radius
+          ? target.y
+          : target.y + target.height / 2;
+        const dx = targetCenterX - aoe.x;
+        const dy = targetCenterY - aoe.y;
+        if (Math.sqrt(dx * dx + dy * dy) < aoe.radius + targetRadius) {
+          target.takeDamage(aoe.damage);
+          aoe.enemiesHit.add(target);
+        }
+      });
+    });
+
+    // 3. Colisão: Inimigos de Contato vs. Jogador
     this.enemies.forEach((e) => {
       if (e.markedForDeletion) return;
-      const dx = e.x + e.width / 2 - this.player.x;
-      const dy = e.y + e.height / 2 - this.player.y;
-      if (Math.sqrt(dx * dx + dy * dy) < this.player.width / 2 + e.width / 2) {
-        if (e instanceof ParasiteEnemy) {
-          e.markedForDeletion = true;
-          this.createParticles(e.x, e.y, e.color);
-          this.player.latchedParasites++;
-        } else if (e instanceof SpiralEnemy) {
-          const timeProgress = Math.min(this.gameTime / 600000, 1.0);
-          const damage = Math.floor(15 + 15 * timeProgress);
-          this.player.takeDamage(damage);
-          this.createParticles(e.x, e.y, e.color, 30);
-          e.markedForDeletion = true;
+      if (e instanceof ParasiteEnemy || e instanceof SpiralEnemy) {
+        const dx = e.x + e.width / 2 - this.player.x;
+        const dy = e.y + e.height / 2 - this.player.y;
+        if (
+          Math.sqrt(dx * dx + dy * dy) <
+          this.player.width / 2 + e.width / 2
+        ) {
+          if (e instanceof ParasiteEnemy) {
+            e.markedForDeletion = true;
+            this.createParticles(e.x, e.y, e.colorBody);
+            this.player.latchedParasites++;
+          } else if (e instanceof SpiralEnemy) {
+            const timeProgress = Math.min(this.gameTime / 600000, 1.0);
+            const damage = Math.floor(15 + 15 * timeProgress);
+            this.player.takeDamage(damage);
+            this.createParticles(e.x, e.y, e.color, 30);
+            e.markedForDeletion = true;
+          }
         }
       }
     });
+
+    // 4. Colisão: Projéteis Inimigos vs. Jogador
     this.enemyProjectiles.forEach((ep) => {
       if (ep.markedForDeletion) return;
       const dx = ep.x - this.player.x;
@@ -325,54 +440,111 @@ class Game {
         this.player.takeDamage(Math.floor(ep.damage));
       }
     });
-    this.aoeEffects.forEach((aoe) => {
-      if (aoe instanceof LaserBeam) {
-        if (
-          aoe.target &&
-          !aoe.target.markedForDeletion &&
-          !aoe.enemiesHit.has(aoe.target)
-        ) {
-          aoe.target.takeDamage(aoe.damage);
-          aoe.enemiesHit.add(aoe.target);
+
+    // 5. Colisão: Laser do Chefe vs. Jogador
+    if (this.boss) {
+      let playerIsBeingHit = false;
+      this.boss.laserBeams.forEach((laser) => {
+        if (laser.active) {
+          const lineX1 = laser.x,
+            lineY1 = laser.y;
+          const lineX2 = laser.x + Math.cos(laser.angle) * laser.beamLength;
+          const lineY2 = laser.y + Math.sin(laser.angle) * laser.beamLength;
+          const playerR = this.player.width / 2,
+            playerX = this.player.x + playerR,
+            playerY = this.player.y + this.player.height / 2;
+          const lenSq =
+            Math.pow(lineX2 - lineX1, 2) + Math.pow(lineY2 - lineY1, 2);
+          let dot =
+            ((playerX - lineX1) * (lineX2 - lineX1) +
+              (playerY - lineY1) * (lineY2 - lineY1)) /
+            lenSq;
+          dot = Math.max(0, Math.min(1, dot));
+          const closestX = lineX1 + dot * (lineX2 - lineX1);
+          const closestY = lineY1 + dot * (lineY2 - lineY1);
+          const distance = Math.hypot(playerX - closestX, playerY - closestY);
+          if (distance < playerR + laser.thickness / 2) {
+            playerIsBeingHit = true;
+          }
+        }
+      });
+      if (playerIsBeingHit) {
+        this.player.timeInBossLaser += this.lastDeltaTime || 16.67;
+        const damageInterval = 200;
+        if (this.player.timeSinceLastLaserDamage > damageInterval) {
+          const rampUpTime = 2000;
+          const damageRampProgress = Math.min(
+            1,
+            this.player.timeInBossLaser / rampUpTime
+          );
+          const baseDamage = 3,
+            maxDamage = 10;
+          const currentDamage =
+            baseDamage + (maxDamage - baseDamage) * damageRampProgress;
+          this.player.takeDamage(Math.ceil(currentDamage));
+          this.player.timeSinceLastLaserDamage = 0;
         }
       } else {
-        this.enemies.forEach((e) => {
-          if (e.markedForDeletion || (aoe.enemiesHit && aoe.enemiesHit.has(e)))
-            return;
-          if (aoe.radius) {
-            const dx = e.x + e.width / 2 - aoe.x;
-            const dy = e.y + e.height / 2 - aoe.y;
-            if (Math.sqrt(dx * dx + dy * dy) < aoe.radius + e.width / 2) {
-              e.takeDamage(aoe.damage);
-              if (aoe.enemiesHit) aoe.enemiesHit.add(e);
-            }
-          }
-        });
+        this.player.timeInBossLaser = 0;
       }
-    });
+    }
   }
-  getClosestEnemy(entity) {
-    let closestEnemy = null;
+
+  getDamageableTargets() {
+    // Começa com uma lista de todos os inimigos que não estão marcados para deleção.
+    let targets = this.enemies.filter((e) => !e.markedForDeletion);
+    targets = targets.filter((e) => this.isInCameraView(e));
+    // Se o chefe existir, estiver ativo e não marcado para deleção, adicione-o à lista de alvos.
+    if (this.boss && !this.boss.markedForDeletion) {
+      //  console.log("Adicionando o chefe como alvo de dano");
+      targets.push(this.boss);
+    }
+
+    return targets;
+  }
+
+  getClosestTarget(sourcePosition) {
+    let closestTarget = null;
     let minDistance = Infinity;
-    this.enemies.forEach((enemy) => {
-      const dx = enemy.x + enemy.width / 2 - entity.x;
-      const dy = enemy.y + enemy.height / 2 - entity.y;
+
+    // Concatena inimigos e chefe para considerar todos os alvos
+    const potentialTargets = [...this.enemies];
+    if (this.boss && !this.boss.markedForDeletion) { // Adiciona o chefe se ele não estiver marcado para deleção
+        potentialTargets.push(this.boss);
+    }
+
+    for (const target of potentialTargets) {
+      // *** VERIFICAÇÃO CRÍTICA AQUI: O alvo não deve estar marcado para deleção ***
+      if (target.markedForDeletion) {
+        continue; 
+      }
+
+      const targetCenterX = target.radius ? target.x : target.x + target.width / 2;
+      const targetCenterY = target.radius ? target.y : target.y + target.height / 2;
+
+      const dx = targetCenterX - sourcePosition.x;
+      const dy = targetCenterY - sourcePosition.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
+
       if (distance < minDistance) {
         minDistance = distance;
-        closestEnemy = enemy;
+        closestTarget = target;
       }
-    });
-    return closestEnemy;
+    }
+    return closestTarget;
   }
-   //Encontra o próximo alvo para o raio encadeado
+  //Encontra o próximo alvo para o raio encadeado
   findNextChainTarget(startEntity, excludedEnemies, maxRange = 200) {
     let closestEnemy = null;
     let minDistance = maxRange; // Define um alcance máximo para o raio pular
 
-    this.enemies.forEach((enemy) => {
+    this.getDamageableTargets().forEach((enemy) => {
       // Pula o próprio inimigo, inimigos já atingidos ou marcados para deleção
-      if (enemy === startEntity || excludedEnemies.has(enemy) || enemy.markedForDeletion) {
+      if (
+        enemy === startEntity ||
+        excludedEnemies.has(enemy) ||
+        enemy.markedForDeletion
+      ) {
         return;
       }
 
@@ -390,14 +562,14 @@ class Game {
   }
 
   //Gerencia a criação da corrente de raios
- triggerChainLightning(sourceOrb, initialTarget) {
+  triggerChainLightning(sourceOrb, initialTarget) {
     const u = this.player.upgrades.laserOrb;
     const maxChains = u.chain || 0;
     const damage = u.damage || 5;
 
     const effectsToCreate = [];
     const enemiesHitInChain = new Set();
-    
+
     let currentSource = sourceOrb;
     let currentTarget = initialTarget;
     let chainsLeft = maxChains + 1;
@@ -406,15 +578,18 @@ class Game {
       enemiesHitInChain.add(currentTarget);
       currentTarget.takeDamage(damage);
 
-      // --- MUDANÇA PRINCIPAL AQUI ---
       // Cria a nossa nova animação de choque em vez do LaserBeam
-      effectsToCreate.push(new ChainLightningSegment(this, currentSource, currentTarget,"purple"));
-      // --- FIM DA MUDANÇA ---
-      
+      effectsToCreate.push(
+        new ChainLightningSegment(this, currentSource, currentTarget, "purple")
+      );
+
       chainsLeft--;
-      
+
       if (chainsLeft > 0) {
-        const nextTarget = this.findNextChainTarget(currentTarget, enemiesHitInChain);
+        const nextTarget = this.findNextChainTarget(
+          currentTarget,
+          enemiesHitInChain
+        );
         currentSource = currentTarget;
         currentTarget = nextTarget;
       } else {
@@ -446,16 +621,32 @@ class Game {
     }
   }
   populateDebugMenu() {
-    if (this.debugUpgradesContainer.childElementCount > 0) return;
+    // Limpa o container antes de adicionar novos botões para evitar duplicação
+    this.debugUpgradesContainer.innerHTML = "";
 
     upgradePool.forEach((upgrade) => {
+      // Itera através de cada nível do upgrade
       for (let i = 0; i < upgrade.maxLevel; i++) {
-        const level = upgrade.levels[i];
+        const levelData = upgrade.levels[i];
+
         const btn = document.createElement("button");
         btn.classList.add("debug-btn");
-        btn.textContent = level.title;
+        btn.textContent = levelData.title;
+
+        // --- CORREÇÃO APLICADA AQUI ---
+        // O handler de clique agora é inteligente e lida com os dois tipos de upgrades.
         btn.onclick = () => {
-          level.apply(this.player);
+          // 1. Verifica se o upgrade principal tem uma função 'apply' genérica.
+          if (typeof upgrade.apply === "function") {
+            // Se sim, usa a função genérica, passando o índice do nível (i).
+            // Isso é para os seus upgrades mais dinâmicos.
+            upgrade.apply(this.player, i);
+          } else {
+            // 2. Se não, usa o método antigo, onde cada nível tem sua própria função 'apply'.
+            levelData.apply(this.player);
+          }
+          // Opcional: Feedback no console para saber qual upgrade foi ativado.
+          console.log(`Debug: Habilidade '${levelData.title}' aplicada.`);
         };
         this.debugUpgradesContainer.appendChild(btn);
       }
@@ -507,26 +698,31 @@ class Game {
     );
   }
 
-  // Em js/game_design/game.js
-
   triggerLightningStrikes() {
     const u = this.player.upgrades.lightningStrike;
-    const availableEnemies = this.enemies.filter((e) => !e.markedForDeletion);
+    const availableEnemies = this.getDamageableTargets(); // Esta função já inclui o chefe
 
     if (availableEnemies.length === 0) return;
 
-    // A função volta a ser simples, apenas lê o valor de u.count
-    // que foi definido dinamicamente pelo upgrade.
     for (let i = 0; i < u.count; i++) {
       const target =
         availableEnemies[Math.floor(Math.random() * availableEnemies.length)];
 
       if (target) {
+        // Verifica se o alvo tem a propriedade 'radius' (o chefe tem).
+        // Se tiver, usa (x,y) como centro. Se não, calcula o centro a partir de width/height.
+        const targetCenterX = target.radius
+          ? target.x
+          : target.x + target.width / 2;
+        const targetCenterY = target.radius
+          ? target.y
+          : target.y + target.height / 2;
+
         this.aoeEffects.push(
           new LightningBolt(
             this,
-            target.x + target.width / 2,
-            target.y + target.height / 2,
+            targetCenterX, // Coordenada X corrigida
+            targetCenterY, // Coordenada Y corrigida
             u.radius,
             u.damage,
             "#FFFF99"
@@ -535,6 +731,7 @@ class Game {
       }
     }
   }
+
   triggerThorns(x, y) {
     const u = this.player.upgrades.thorns;
     this.aoeEffects.push(
@@ -578,9 +775,9 @@ class Game {
   restart() {
     this.setup();
   }
-  enterLevelUpState() {
+  enterLevelUpState(choicesCount = 3) {
     if (this.gameState !== "running") return;
-    const upgradeChoices = this.getUpgradeChoices(3);
+    const upgradeChoices = this.getUpgradeChoices(choicesCount);
     if (upgradeChoices.length === 0) {
       this.player.heal(25);
       return;
@@ -642,7 +839,7 @@ class Game {
     const animate = (timestamp) => {
       const deltaTime = timestamp - lastTime || 0;
       lastTime = timestamp;
-
+      this.lastDeltaTime = deltaTime;
       if (this.gameState === "running") {
         this.update(deltaTime);
       }
