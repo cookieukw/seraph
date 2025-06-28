@@ -18,6 +18,7 @@ class LightningBolt {
     this.enemiesHit = new Set();
     
     // Gera os segmentos irregulares do raio
+    this.enemiesHit = new Set()
     this.segments = this.createJaggedSegments();
   }
 

@@ -5,8 +5,14 @@ class ChainLightningSegment {
     this.game = game;
     // Pega as posições centrais da fonte e do alvo
     this.source = { x: source.x, y: source.y };
-    this.target = { x: target.x + target.width / 2, y: target.y + target.height / 2 };
-    
+    this.target = {}; // Inicializa o objeto target vazio
+    if (target.radius !== undefined) { // Se o target tem 'radius', é o Boss
+        this.target.x = target.x;
+        this.target.y = target.y;
+    } else { // Caso contrário, é um inimigo comum (assume width/height)
+        this.target.x = target.x + target.width / 2;
+        this.target.y = target.y + target.height / 2;
+    } 
     this.timer = 0;
     this.duration = 250; // Duração total do efeito em ms
     this.markedForDeletion = false;

@@ -35,14 +35,10 @@ class LaserOrb extends Orb {
 
     if (this.shootTimer >= this.shootCooldown) {
       if (this.game.gameState === "running") {
-        const target = this.game.getClosestEnemy(this); // Tenta encontrar um alvo
+        const target = this.game.getClosestTarget(this); // Tenta encontrar um alvo
 
         // DISPARA SOMENTE SE HOUVER UM ALVO E O JOGO ESTIVER RODANDO
         if (target) {
-          /* const u = this.player.upgrades.laserOrb; // Assume que u é definido como this.player.upgrades.laserOrb
-          this.game.aoeEffects.push(
-            new LaserBeam(this.game, this, target, u.damage, u.pierce, u.chain)
-          ); */
           this.game.triggerChainLightning(this, target);
           this.isFiring = true; // Ativa o feedback de disparo
           this.firingTimer = this.firingDuration;
